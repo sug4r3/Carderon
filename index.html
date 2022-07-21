@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Carderon</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="src/socketio.js"></script>
+    <script src="src/scene.js"></script>
+    <script src="src/main.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="start_scene" v-if="isSeen">
+            <button v-on:click.prevent="setScene('makeRoom_scene')">ルーム作成</button><button
+                v-on:click.prevent="setScene('joinRoom_scene')">ルーム入室</button>
+        </div>
+        <div id="makeRoom_scene" v-if="isSeen">
+            <form action="" method="post" id="form">
+                <label>
+                    ユーザー名<input v-model="username"><button
+                        v-on:click.prevent="makeRoom(),setScene('waitRoom_scene')">決定</button>
+                </label>
+            </form>
+            <button v-on:click.prevent="setScene('start_scene')">戻る</button>
+        </div>
+        <div id="joinRoom_scene" v-if="isSeen">
+            <form action="" method="post" id="form">
+                <label>
+                    部屋番号<input v-model.number="room_property.roomID" type="number" min="10000" max="99999">
+                    ユーザー名<input v-model="room_property.username"><button
+                        v-on:click.prevent="joinRoom(),setScene('waitRoom_scene')">決定</button>
+                </label>
+            </form>
+            <button v-on:click.prevent="setScene('start_scene')">戻る</button>
+        </div>
+        <div id="waitRoom_scene" v-if="isSeen">
+            <p>部屋番号: {{room_property.roomID}}, ユーザー名: {{room_property.username}}</p>
+            <p>対戦相手を待っています...</p>
+        </div>
+        <div id="room_scene" v-if="isSeen">
+            <p>部屋番号: {{room_property.roomID}}</p>
+            <p>自分: {{getMyUsername}}, 相手: {{getEnemyUsername}}</p>
+        </div>
+    </div>
+</body>
+
+</html>
