@@ -1,33 +1,47 @@
 window.addEventListener("load", () => {
     //初期化
-    initialize();
+    Main.initialize();
 
     //メインループ開始
-    loop();
+    Main.loop();
 });
 
-let mode;
-let frame;
+//frame
+//mode
 
-function initialize() {
-    Scene.initialize();
-    SocketIO.initialize();
+class Main {
+    static initialize() {
+        Scene.initialize();
+        SocketIO.initialize();
 
-    mode = 'start';
-    frame = 0;
-}
-
-function loop() {
-    switch (mode) {
-        case 'start':
-            Scene.setScene('start_scene');
-            mode = 'make_join_Room';
-            break;
-
-        case 'make_join_Room':
-            break;
+        this.reset();
     }
 
-    frame++;
-    requestAnimationFrame(loop);
+    static loop() {
+        switch (Main.mode) {
+            case 'start':
+                Scene.setScene('start_scene');
+                Main.mode = 'make_join_Room';
+                break;
+
+            case 'make_join_Room':
+                if (Scene.isMatched) {
+                    Main.mode = 'card_set';
+                }
+                break;
+
+            case 'card_set':
+                console.log(Main.mode);
+                break;
+        }
+
+        Main.frame++;
+        requestAnimationFrame(Main.loop);
+    }
+
+    static reset() {
+        this.mode = 'start';
+        this.frame = 0;
+        Scene.isMatched = false;
+    }
 }

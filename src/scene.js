@@ -5,9 +5,11 @@ class Scene {
     //room_scene
 
     //isHost
+    //isMatched
 
     static initialize() {
         this.isHost = false;
+        this.isMatched = false;
 
         this.start_scene = new Vue({
             el: '#start_scene',
@@ -89,7 +91,7 @@ class Scene {
                 },
                 getEnemyUsername: function () {
                     return (!Scene.isHost) ? this.room_property.player1 : this.room_property.player2;
-                },
+                }
             },
             methods: {
                 setRoomProperty: function (obj) {
