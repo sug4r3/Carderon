@@ -67,6 +67,9 @@ io.on('connection', function (socket) {
         else if (roomID < 10000 || roomID > 99999) {    //範囲外
             socket.emit('ERR_ROOMID_OUT_OF_RANGE', roomID);
         }
+        else if (index.player2 != null) {
+            socket.emit('ERR_ROOMID_USED', roomID);
+        }
         else {  //マッチング
             index.player2 = username;
             socket.join(roomID);

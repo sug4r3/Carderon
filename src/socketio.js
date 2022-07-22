@@ -26,7 +26,13 @@ class SocketIO {
             alert('部屋番号は5桁の整数で入力してください');
         })
 
-        this.socket.on('ERR_DISCONNECT', function () {
+        this.socket.on('ERR_ROOMID_USED', function (roomID) {
+            Scene.setScene('start_scene');
+            Main.reset();
+            alert('その部屋番号はゲーム中です');
+        })
+
+        this.socket.on('ERR_DISCONNECT', function (roomID) {
             Scene.setScene('start_scene');
             Main.reset();
             alert('通信が切断されました');
