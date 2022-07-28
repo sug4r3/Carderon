@@ -4,47 +4,315 @@
 <head>
     <title>Carderon</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="src/socketio.js"></script>
     <script src="src/scene.js"></script>
+    <script src="src/gamescene.js"></script>
     <script src="src/main.js"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-    <div id="container">
+    <div class="container">
+        <div id="title" v-if="isSeen">
+            <img src="img/title_background.png">
+            <img src="img/title.png" class="title">
+        </div>
         <div id="start_scene" v-if="isSeen">
-            <button v-on:click.prevent="setScene('makeRoom_scene')">ルーム作成</button><button
-                v-on:click.prevent="setScene('joinRoom_scene')">ルーム入室</button>
+            <img src="img/make_room_table.png" @click.prevent="setScene('makeRoom_scene')" class="makeRoom_button">
+            <img src="img/join_room_table.png" @click.prevent="setScene('joinRoom_scene')" class="joinRoom_button">
         </div>
         <div id="makeRoom_scene" v-if="isSeen">
-            <form action="" method="post" id="form">
-                <label>
-                    ユーザー名<input v-model="username"><button
-                        v-on:click.prevent="makeRoom(),setScene('waitRoom_scene')">決定</button>
-                </label>
-            </form>
-            <button v-on:click.prevent="setScene('start_scene')">戻る</button>
+            <div class="form" id="name">
+                <img src="img/name_table.png">
+                <form action="" method="post" class="name_form">
+                    <input placeholder="..." v-model="username" class="input">
+                </form>
+            </div>
+            <img src="img/return.png" @click.prevent="setScene('start_scene')" class="return_button">
+            <img src="img/check.png" @click.prevent="makeRoom(),setScene('waitRoom_scene')" class="check_button">
         </div>
         <div id="joinRoom_scene" v-if="isSeen">
-            <form action="" method="post" id="form">
-                <label>
-                    部屋番号<input v-model.number="room_property.roomID" type="number" min="10000" max="99999">
-                    ユーザー名<input v-model="room_property.username"><button
-                        v-on:click.prevent="joinRoom(),setScene('waitRoom_scene')">決定</button>
-                </label>
-            </form>
-            <button v-on:click.prevent="setScene('start_scene')">戻る</button>
+            <div class="form" id="name">
+                <img src="img/name_table.png">
+                <form action="" method="post" class="name_form">
+                    <input placeholder="..." v-model="room_property.username" class="input">
+                </form>
+            </div>
+            <div class="form" id="roomID">
+                <img src="img/room_id_table.png">
+                <form action="" method="post" class="roomID_form">
+                    <input placeholder="..." v-model.number="room_property.roomID" type="number" min="10000" max="99999"
+                        class="input">
+                </form>
+            </div>
+            <img src="img/return.png" @click.prevent="setScene('start_scene')" class="return_button">
+            <img src="img/check.png" @click.prevent="joinRoom(),setScene('waitRoom_scene')" class="check_button">
         </div>
         <div id="waitRoom_scene" v-if="isSeen">
-            <p>部屋番号: {{room_property.roomID}}, ユーザー名: {{room_property.username}}</p>
-            <p>対戦相手を待っています...</p>
+            <div class="form" id="wait_data">
+                <img src="img/room_id_table.png" class="roomID_table">
+                <img src="img/name_table.png" class="name_table">
+                <p id="roomID">{{room_property.roomID}}</p>
+                <p id="name">{{room_property.username}}</p>
+            </div>
+            <p id="wait_msg">対戦相手を待っています...</p>
+            <img src="img/return.png" @click.prevent="setScene('start_scene')" class="return_button">
         </div>
         <div id="room_scene" v-if="isSeen">
-            <p>部屋番号: {{room_property.roomID}}</p>
-            <p>自分: {{getMyUsername}}, 相手: {{getEnemyUsername}}</p>
+            <div class="form" id="wait_data">
+                <img src="img/room_id_table.png" class="roomID_table">
+                <img src="img/name_table.png" class="name_table">
+                <p id="roomID">{{room_property.roomID}}</p>
+                <p id="name">{{getMyUsername}}</p>
+            </div>
+            <p id="msg">マッチングしました！</p>
+            <p id="enemy_name">「　{{getEnemyUsername}}　」</p>
+            <img src="img/return.png" @click.prevent="leaveRoom(),setScene('start_scene')" class="return_button">
+            <img src="img/check.png" v-if="getIsHost()" @click.prevent="startGame()" class="check_button">
+            <img src="img/kick.png" v-if="getIsHost()" @click.prevent="kickEnemy(),setScene('waitRoom_scene')"
+                class="kick_button">
         </div>
+
+        <div class="game_scene">
+            <img src="img/game_background.png" id="background" v-if="isSeen">
+
+            <div class="card_set" v-if="isSeen">
+                <p>セットするカードを選んでください</p>
+                <div class="card_list">
+                    <div class="row">
+                        <img src="img/spade-1.png" class="card" @click.prevent="clickCard('spade',1)"
+                            :style="{visibility: (isUsed('spade',1))? 'visible': 'hidden'}">
+                        <img src="img/clover-1.png" class="card" @click.prevent="clickCard('clover',1)"
+                            :style="{visibility: (isUsed('clover',1))? 'visible': 'hidden'}">
+                        <img src="img/heart-1.png" class="card" @click.prevent="clickCard('heart',1)"
+                            :style="{visibility: (isUsed('heart',1))? 'visible': 'hidden'}">
+                        <img src="img/diamond-1.png" class="card" @click.prevent="clickCard('diamond',1)"
+                            :style="{visibility: (isUsed('diamond',1))? 'visible': 'hidden'}">
+                    </div>
+                    <div class="row">
+                        <img src="img/spade-2.png" class="card" @click.prevent="clickCard('spade',2)"
+                            :style="{visibility: (isUsed('spade',2))? 'visible': 'hidden'}">
+                        <img src="img/clover-2.png" class="card" @click.prevent="clickCard('clover',2)"
+                            :style="{visibility: (isUsed('clover',2))? 'visible': 'hidden'}">
+                        <img src="img/heart-2.png" class="card" @click.prevent="clickCard('heart',2)"
+                            :style="{visibility: (isUsed('heart',2))? 'visible': 'hidden'}">
+                        <img src="img/diamond-2.png" class="card" @click.prevent="clickCard('diamond',2)"
+                            :style="{visibility: (isUsed('diamond',2))? 'visible': 'hidden'}">
+                    </div>
+                    <div class="row">
+                        <img src="img/spade-3.png" class="card" @click.prevent="clickCard('spade',3)"
+                            :style="{visibility: (isUsed('spade',3))? 'visible': 'hidden'}">
+                        <img src="img/clover-3.png" class="card" @click.prevent="clickCard('clover',3)"
+                            :style="{visibility: (isUsed('clover',3))? 'visible': 'hidden'}">
+                        <img src="img/heart-3.png" class="card" @click.prevent="clickCard('heart',3)"
+                            :style="{visibility: (isUsed('heart',3))? 'visible': 'hidden'}">
+                        <img src="img/diamond-3.png" class="card" @click.prevent="clickCard('diamond',3)"
+                            :style="{visibility: (isUsed('diamond',3))? 'visible': 'hidden'}">
+                    </div>
+                </div>
+                <div class="set_card_list">
+                    <img v-bind:src="'img/' + cardImg1 + '.png'" class="card">
+                    <img v-bind:src="'img/' + cardImg2 + '.png'" class="card">
+                    <img v-bind:src="'img/' + cardImg3 + '.png'" class="card">
+                </div>
+                <img src="img/check_white.png" :style="!isSet3Cards? 'opacity:0.5': ''" @click.prevent="sendMyCards()"
+                    class="check_button">
+                <img src="img/redo_white.png" @click.prevent="resetCard()" class="redo_button">
+            </div>
+
+            <div class="wait_enemy_set" v-if="isSeen">
+                <p>相手のカードセットを<br>待っています</p>
+            </div>
+
+
+            <div class="my_turn" v-if="isSeen">
+                <div class="my_table">
+                    <p>{{getRoomProperty().my_username}}</p>
+                    <img src="img/my_table.png" class="my_table_image">
+                    <div class="my_card_container">
+                        <img :src="'img/' + cardImg1 + '.png'" class="card">
+                        <img :src="'img/' + cardImg2 + '.png'" class="card">
+                        <img :src="'img/' + cardImg3 + '.png'" class="card">
+                    </div>
+                </div>
+                <div class="enemy_table">
+                    <p>{{getRoomProperty().enemy_username}}</p>
+                    <img src="img/enemy_table.png" class="enemy_table_image">
+                    <div class="enemy_card_container">
+                        <img src="img/card-back-red.png" class="card">
+                        <img src="img/card-back-red.png" class="card">
+                        <img src="img/card-back-red.png" class="card">
+                    </div>
+                </div>
+
+                <div class="my_log">
+                    <img src="img/log_table.png">
+                    <div class="list">
+                        <div v-for="(log, index) in my_logs" :key="index">
+                            {{log}}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="enemy_log">
+                    <img src="img/log_table.png">
+                    <div class="list">
+                        <div v-for="(log, index) in enemy_logs" :key="index">
+                            {{log}}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card_list">
+                    <div class="row">
+                        <img src="img/spade-1.png" class="card" @click.prevent="clickCard('spade',1)"
+                            :style="[{visibility: (isUsed('spade',1))? 'visible': 'hidden'},{outline: (isSelected('spade',1))? '1px solid red': 'none'}]">
+                        <img src="img/clover-1.png" class="card" @click.prevent="clickCard('clover',1)"
+                            :style="[{visibility: (isUsed('clover',1))? 'visible': 'hidden'},{outline: (isSelected('clover',1))? '1px solid red': 'none'}]">
+                        <img src="img/heart-1.png" class="card" @click.prevent="clickCard('heart',1)"
+                            :style="[{visibility: (isUsed('heart',1))? 'visible': 'hidden'},{outline: (isSelected('heart',1))? '1px solid red': 'none'}]">
+                        <img src="img/diamond-1.png" class="card" @click.prevent="clickCard('diamond',1)"
+                            :style="[{visibility: (isUsed('diamond',1))? 'visible': 'hidden'},{outline: (isSelected('diamond',1))? '1px solid red': 'none'}]">
+                    </div>
+                    <div class="row">
+                        <img src="img/spade-2.png" class="card" @click.prevent="clickCard('spade',2)"
+                            :style="[{visibility: (isUsed('spade',2))? 'visible': 'hidden'},{outline: (isSelected('spade',2))? '1px solid red': 'none'}]">
+                        <img src="img/clover-2.png" class="card" @click.prevent="clickCard('clover',2)"
+                            :style="[{visibility: (isUsed('clover',2))? 'visible': 'hidden'},{outline: (isSelected('clover',2))? '1px solid red': 'none'}]">
+                        <img src="img/heart-2.png" class="card" @click.prevent="clickCard('heart',2)"
+                            :style="[{visibility: (isUsed('heart',2))? 'visible': 'hidden'},{outline: (isSelected('heart',2))? '1px solid red': 'none'}]">
+                        <img src="img/diamond-2.png" class="card" @click.prevent="clickCard('diamond',2)"
+                            :style="[{visibility: (isUsed('diamond',2))? 'visible': 'hidden'},{outline: (isSelected('diamond',2))? '1px solid red': 'none'}]">
+                    </div>
+                    <div class="row">
+                        <img src="img/spade-3.png" class="card" @click.prevent="clickCard('spade',3)"
+                            :style="[{visibility: (isUsed('spade',3))? 'visible': 'hidden'},{outline: (isSelected('spade',3))? '1px solid red': 'none'}]">
+                        <img src="img/clover-3.png" class="card" @click.prevent="clickCard('clover',3)"
+                            :style="[{visibility: (isUsed('clover',3))? 'visible': 'hidden'},{outline: (isSelected('clover',3))? '1px solid red': 'none'}]">
+                        <img src="img/heart-3.png" class="card" @click.prevent="clickCard('heart',3)"
+                            :style="[{visibility: (isUsed('heart',3))? 'visible': 'hidden'},{outline: (isSelected('heart',3))? '1px solid red': 'none'}]">
+                        <img src="img/diamond-3.png" class="card" @click.prevent="clickCard('diamond',3)"
+                            :style="[{visibility: (isUsed('diamond',3))? 'visible': 'hidden'},{outline: (isSelected('diamond',3))? '1px solid red': 'none'}]">
+                    </div>
+                </div>
+
+                <div class="card_dummy_container">
+                    <img :src="'img/' + cardDummy1 + '.png'" @click.prevent="setDummyCard(1)" class="card">
+                    <img :src="'img/' + cardDummy2 + '.png'" @click.prevent="setDummyCard(2)" class="card">
+                    <img :src="'img/' + cardDummy3 + '.png'" @click.prevent="setDummyCard(3)" class="card">
+                </div>
+
+                <img src="img/arrow.png" class="arrow">
+
+                <img src="img/check_button.png" @click.prevent="sendCheckMessage()" class="card_check_button">
+                <img src="img/challenge_button.png" @click.prevent="challenge()" class="card_challenge_button">
+                <img src="img/redo_white.png" @click.prevent="resetDummyCard()" class="card_redo_button">
+
+            </div>
+
+            <div class="wait_calc" v-if="isSeen">
+                <p>通信待機中...</p>
+            </div>
+
+            <div class="check_result" v-if="isSeen">
+                <div class="check_result_card">
+                    <img :src="'img/' + cardDummy1 + '.png'" class="card">
+                    <img :src="'img/' + cardDummy2 + '.png'" class="card">
+                    <img :src="'img/' + cardDummy3 + '.png'" class="card">
+                </div>
+                <p>{{message}}</p>
+                <img src="img/finish_turn.png" @click.prevent="finishMyTurn()" class="finish_button">
+            </div>
+
+            <div class="challenge" v-if="isSeen">
+                <div class="card_list">
+                    <div class="row">
+                        <img src="img/spade-1.png" class="card" @click.prevent="clickCard('spade',1)"
+                            :style="{visibility: (isUsed('spade',1))? 'visible': 'hidden'}">
+                        <img src="img/clover-1.png" class="card" @click.prevent="clickCard('clover',1)"
+                            :style="{visibility: (isUsed('clover',1))? 'visible': 'hidden'}">
+                        <img src="img/heart-1.png" class="card" @click.prevent="clickCard('heart',1)"
+                            :style="{visibility: (isUsed('heart',1))? 'visible': 'hidden'}">
+                        <img src="img/diamond-1.png" class="card" @click.prevent="clickCard('diamond',1)"
+                            :style="{visibility: (isUsed('diamond',1))? 'visible': 'hidden'}">
+                    </div>
+                    <div class="row">
+                        <img src="img/spade-2.png" class="card" @click.prevent="clickCard('spade',2)"
+                            :style="{visibility: (isUsed('spade',2))? 'visible': 'hidden'}">
+                        <img src="img/clover-2.png" class="card" @click.prevent="clickCard('clover',2)"
+                            :style="{visibility: (isUsed('clover',2))? 'visible': 'hidden'}">
+                        <img src="img/heart-2.png" class="card" @click.prevent="clickCard('heart',2)"
+                            :style="{visibility: (isUsed('heart',2))? 'visible': 'hidden'}">
+                        <img src="img/diamond-2.png" class="card" @click.prevent="clickCard('diamond',2)"
+                            :style="{visibility: (isUsed('diamond',2))? 'visible': 'hidden'}">
+                    </div>
+                    <div class="row">
+                        <img src="img/spade-3.png" class="card" @click.prevent="clickCard('spade',3)"
+                            :style="{visibility: (isUsed('spade',3))? 'visible': 'hidden'}">
+                        <img src="img/clover-3.png" class="card" @click.prevent="clickCard('clover',3)"
+                            :style="{visibility: (isUsed('clover',3))? 'visible': 'hidden'}">
+                        <img src="img/heart-3.png" class="card" @click.prevent="clickCard('heart',3)"
+                            :style="{visibility: (isUsed('heart',3))? 'visible': 'hidden'}">
+                        <img src="img/diamond-3.png" class="card" @click.prevent="clickCard('diamond',3)"
+                            :style="{visibility: (isUsed('diamond',3))? 'visible': 'hidden'}">
+                    </div>
+                </div>
+                <div class="set_card_list">
+                    <img v-bind:src="'img/' + cardImg1 + '.png'" class="card">
+                    <img v-bind:src="'img/' + cardImg2 + '.png'" class="card">
+                    <img v-bind:src="'img/' + cardImg3 + '.png'" class="card">
+                </div>
+                <img src="img/challenge_button.png" :style="!isSet3Cards? 'opacity:0.5': ''"
+                    @click.prevent="sendMyCards()" class="challenge_send_button">
+                <img src="img/redo.png" @click.prevent="resetCard()" class="challenge_redo_button">
+                <p class="cross" @click.prevent="halt()">x</p>
+            </div>
+
+            <div class="challenge_result" v-if="isSeen">
+                <div class="challenge_result_card">
+                    <img :src="'img/' + cardDummy1 + '.png'" class="card">
+                    <img :src="'img/' + cardDummy2 + '.png'" class="card">
+                    <img :src="'img/' + cardDummy3 + '.png'" class="card">
+                </div>
+                <p>{{message}}</p>
+                <img src="img/finish_turn.png" @click.prevent="finishMyTurn()" class="finish_button">
+            </div>
+
+            <div class="enemy_turn" v-if="isSeen">
+                <p>相手のターン</p>
+                <p>相手の行動を待っています</p>
+            </div>
+
+            <div class="game_result" v-if="isSeen">
+                <div class="back">
+                    <div class="my">
+                        <p>{{getMyUsername()}} のカード</p>
+                        <img src="img/my_result.png" class="board">
+                        <div class="my_card">
+                            <img :src="'img/' + myCard1 + '.png'" class="card">
+                            <img :src="'img/' + myCard2 + '.png'" class="card">
+                            <img :src="'img/' + myCard3 + '.png'" class="card">
+                        </div>
+                    </div>
+                    <div class="enemy">
+                        <p>{{getEnemyUsername()}} のカード</p>
+                        <img src="img/enemy_result.png" class="board">
+                        <div class="enemy_card">
+                            <img :src="'img/' + enemyCard1 + '.png'" class="card">
+                            <img :src="'img/' + enemyCard2 + '.png'" class="card">
+                            <img :src="'img/' + enemyCard3 + '.png'" class="card">
+                        </div>
+                    </div>
+                    <p class="message">{{message}}</p>
+                    <img src="img/return.png" @click.prevent="setScene('start_scene')" class="result_return_button">
+                </div>
+            </div>
+        </div>
+
+
     </div>
 </body>
 

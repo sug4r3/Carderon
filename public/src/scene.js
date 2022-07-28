@@ -11,6 +11,13 @@ class Scene {
         this.isHost = false;
         this.isMatched = false;
 
+        this.title = new Vue({
+            el: '#title',
+            data: {
+                isSeen: true
+            }
+        })
+
         this.start_scene = new Vue({
             el: '#start_scene',
             data: {
@@ -26,8 +33,8 @@ class Scene {
         this.makeRoom_scene = new Vue({
             el: '#makeRoom_scene',
             data: {
-                isSeen: false,
-                username: 'no name'
+                username: 'no name',
+                isSeen: false
             },
             methods: {
                 setScene: function (nextScene) {
@@ -43,11 +50,11 @@ class Scene {
         this.joinRoom_scene = new Vue({
             el: '#joinRoom_scene',
             data: {
-                isSeen: false,
                 room_property: {
                     roomID: 0,
                     username: 'no name'
-                }
+                },
+                isSeen: false
             },
             methods: {
                 setScene: function (nextScene) {
@@ -55,6 +62,7 @@ class Scene {
                 },
                 joinRoom: function () {
                     SocketIO.emit('joinRoom', this.room_property);
+                    Scene.isHost = false;
                 }
             }
         })
@@ -62,15 +70,18 @@ class Scene {
         this.waitRoom_scene = new Vue({
             el: '#waitRoom_scene',
             data: {
-                isSeen: false,
                 room_property: {
                     roomID: 0,
                     username: 'no name'
-                }
+                },
+                isSeen: false
             },
             methods: {
                 setRoomProperty: function (obj) {
                     this.room_property = obj
+                },
+                setScene: function (nextScene) {
+                    Scene.setScene(nextScene);
                 }
             }
         })
@@ -78,12 +89,12 @@ class Scene {
         this.room_scene = new Vue({
             el: '#room_scene',
             data: {
-                isSeen: false,
                 room_property: {
                     roomID: 0,
-                    player1: 'no name',
-                    player2: 'no name'
-                }
+                    player1: null,
+                    player2: null
+                },
+                isSeen: false
             },
             computed: {
                 getMyUsername: function () {
@@ -96,6 +107,21 @@ class Scene {
             methods: {
                 setRoomProperty: function (obj) {
                     this.room_property = obj;
+                },
+                setScene: function (nextScene) {
+                    Scene.setScene(nextScene);
+                },
+                leaveRoom: function () {
+                    SocketIO.emit('leaveRoom', Scene.isHost);
+                },
+                kickEnemy: function () {
+                    SocketIO.emit('kickEnemy', Scene.isHost);
+                },
+                startGame: function () {
+                    SocketIO.emit('startGame', this.room_property);
+                },
+                getIsHost: function () {
+                    return Scene.isHost;
                 }
             }
         })
@@ -103,47 +129,42 @@ class Scene {
     }
 
     static setScene(sceneName) {
+        Scene.clearIsSeen();
         switch (sceneName) {
             case 'start_scene':
-                this.start_scene.isSeen = true;
-                this.makeRoom_scene.isSeen = false;
-                this.joinRoom_scene.isSeen = false;
-                this.waitRoom_scene.isSeen = false;
-                this.room_scene.isSeen = false;
+                GameScene.setScene('reset');
+                Scene.isHost = false;
+                Scene.title.isSeen = true;
+                Scene.start_scene.isSeen = true;
                 break;
-
             case 'makeRoom_scene':
-                this.start_scene.isSeen = false;
-                this.makeRoom_scene.isSeen = true;
-                this.joinRoom_scene.isSeen = false;
-                this.waitRoom_scene.isSeen = false;
-                this.room_scene.isSeen = false;
+                Scene.makeRoom_scene.isSeen = true;
                 break;
-
             case 'joinRoom_scene':
-                this.start_scene.isSeen = false;
-                this.makeRoom_scene.isSeen = false;
-                this.joinRoom_scene.isSeen = true;
-                this.waitRoom_scene.isSeen = false;
-                this.room_scene.isSeen = false;
+                Scene.joinRoom_scene.isSeen = true;
                 break;
-
             case 'waitRoom_scene':
-                this.start_scene.isSeen = false;
-                this.makeRoom_scene.isSeen = false;
-                this.joinRoom_scene.isSeen = false;
-                this.waitRoom_scene.isSeen = true;
-                this.room_scene.isSeen = false;
+                Scene.waitRoom_scene.isSeen = true;
                 break;
-
             case 'room_scene':
-                this.start_scene.isSeen = false;
-                this.makeRoom_scene.isSeen = false;
-                this.joinRoom_scene.isSeen = false;
-                this.waitRoom_scene.isSeen = false;
-                this.room_scene.isSeen = true;
+                Scene.room_scene.isSeen = true;
                 break;
+            case 'game_scene':
+                Scene.title.isSeen = false;
+                const room_property = Scene.room_scene.room_property;
+                GameScene.room_property = {
+                    roomID: room_property.roomID,
+                    my_username: (Scene.isHost) ? room_property.player1 : room_property.player2,
+                    enemy_username: (!Scene.isHost) ? room_property.player1 : room_property.player2
+                }
         }
     }
 
+    static clearIsSeen() {
+        Scene.start_scene.isSeen = false;
+        Scene.makeRoom_scene.isSeen = false;
+        Scene.joinRoom_scene.isSeen = false;
+        Scene.waitRoom_scene.isSeen = false;
+        Scene.room_scene.isSeen = false;
+    }
 }

@@ -11,6 +11,7 @@ window.addEventListener("load", () => {
 
 class Main {
     static initialize() {
+        GameScene.initialize();
         Scene.initialize();
         SocketIO.initialize();
 
@@ -26,12 +27,11 @@ class Main {
 
             case 'make_join_Room':
                 if (Scene.isMatched) {
-                    Main.mode = 'card_set';
+                    Main.mode = 'game';
                 }
                 break;
 
-            case 'card_set':
-                console.log(Main.mode);
+            case 'game':
                 break;
         }
 
