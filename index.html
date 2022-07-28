@@ -27,9 +27,9 @@
         <div id="makeRoom_scene" v-if="isSeen">
             <div class="form" id="name">
                 <img src="img/name_table.png">
-                <form action="" method="post" class="name_form">
+                <div class="name_form">
                     <input placeholder="..." v-model="username" class="input">
-                </form>
+                </div>
             </div>
             <img src="img/return.png" @click.prevent="setScene('start_scene')" class="return_button">
             <img src="img/check.png" @click.prevent="makeRoom(),setScene('waitRoom_scene')" class="check_button">
@@ -37,16 +37,16 @@
         <div id="joinRoom_scene" v-if="isSeen">
             <div class="form" id="name">
                 <img src="img/name_table.png">
-                <form action="" method="post" class="name_form">
+                <div class="name_form">
                     <input placeholder="..." v-model="room_property.username" class="input">
-                </form>
+                </div>
             </div>
             <div class="form" id="roomID">
                 <img src="img/room_id_table.png">
-                <form action="" method="post" class="roomID_form">
+                <div class="roomID_form">
                     <input placeholder="..." v-model.number="room_property.roomID" type="number" min="10000" max="99999"
                         class="input">
-                </form>
+                </div>
             </div>
             <img src="img/return.png" @click.prevent="setScene('start_scene')" class="return_button">
             <img src="img/check.png" @click.prevent="joinRoom(),setScene('waitRoom_scene')" class="check_button">
