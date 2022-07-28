@@ -825,3 +825,22 @@
     left: 5%;
     bottom: 5%;
 }
+
+
+/*
+ *  ルール説明
+ */
+.inst {
+    position: relative;
+}
+
+.inst h2 {}
+
+.inst .content {
+    font-family: "Meiryo", 游ゴシック, "Yu Gothic", sans-serif;
+}
+
+.inst .content img {
+    width: 400px;
+    height: auto;
+}

@@ -311,8 +311,55 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div class="inst">
+        <h2>Carderon ルール説明</h2>
+        <div class="content">
+            このゲームは、限られたカードを使って相手がセットした<span style="font-size: 20px; color: red;">3枚</span>のカードの内訳を見破る推理ゲームです。
+            <h4>カードのセット</h4>
+            はじめに自身のカードをセットします。リストをクリックすると順番に3枚のカードをセットできます。<br>
+            同じカードを2か所以上セットすることはできません。<span style="text-decoration: underline;">またセットしたカードはチェックにも使用できません(後述)。</span><br>
+            <img src="inst/card_set.png">
 
+            <h4>メイン画面</h4>
+            自分のターン中にできる行動は以下の2つのうち<span style="font-size: 20px; color: red;">いずれか1つ</span>になります。
+            <ul>
+                <li>チェック　 : 相手のカード1枚のヒントを得る</li>
+                <li>チャレンジ : 相手のカード3枚を推測する</li>
+            </ul>
+            <img src="inst/main_window.png">
 
+            <h4>チェック</h4>
+            相手のセットされたカード3枚のうち<span style="font-size: 20px; color: red;">1枚</span>に対してヒントを得ることができます。<br>
+            まず、リスト中のいずれかのカードを1枚選択した後、下部にあるチェックリストのうち調べたい場所のカード枠を1つ選択します。<br>
+            <img src="inst/check_set.png"><br>
+            この状態でチェックボタンを押すと結果が表示されます。チェックカードと同じ場所にある相手カードについて、
+            チェックカードとマークも数字も同じであった場合<span
+                style="font-size: 20px; font-weight: bold;">"Match"</span>が、どちらか片方だけが合っている場合<span
+                style="font-size: 20px; font-weight: bold;">"Near"</span>が、
+            どちらも合っていない場合<span style="font-size: 20px; font-weight: bold;">"Miss"</span>が結果として返ってきます。<br>
+            <img src="inst/check_result.png"><br>
+            チェックでは同じカードは1回しか使えず、また自身がセットしたカード3枚も使用することができません。
+            そのため、相手がチェックに使用したカードは相手のカード3枚を推測するカギとなります。
+
+            <h4>チャレンジ</h4>
+            相手のカード3枚をすべて推測します。3枚ともすべてのカードが当たっていた場合、ゲームに勝利することができます。<br>
+            右下のチャレンジボタンを押すと専用画面が表示されます。<br>
+            <img src="inst/challenge_button.png"><br>
+            チャレンジ画面ではすべてのカードから3枚選ぶことができます。リストから1枚ずつ選択すると左から順にカードをセットします。<br>
+            この状態で決定ボタンを押すとチャレンジの結果が表示されます。<br>
+            <img src="inst/challenge_set.png"><br>
+            3枚のうちいずれか1つでも間違っていた場合、チャレンジは失敗となり、相手のターンに移ります。<br>
+            またチャレンジは<span style="font-size: 20px; color: red;">2回失敗するとゲームに敗北します。</span><br>
+            <img src="inst/challenge_result.png"><br>
+            3枚のカードのマークおよび数字がすべて合っていた場合、ゲームに勝利し、リザルト画面が表示されます。<br>
+            <img src="inst/game_result.png">
+
+            <h4>ログ</h4>
+            自分や相手のチェック・チャレンジの結果は簡易的にログに出力されます。チェックではMatchを〇、Nearを△、Missを✕とし表示しています。
+            またチャレンジではどのカード3枚を使ってミスしたかが表示されます。<br>
+            <img src="inst/log.png">
+        </div>
     </div>
 </body>
 
